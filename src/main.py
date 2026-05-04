@@ -2,7 +2,7 @@ import os
 import re
 import json
 from dotenv import load_dotenv
-from openai import OpenAI
+import google.generativeai as genai
 from utils import pick_voice_name
 from story_generator import (
     generate_story_and_title,
@@ -31,11 +31,9 @@ dotenv_path = os.path.join(os.path.dirname(script_dir), ".env")
 load_dotenv(dotenv_path)
 
 config = load_config()
-# Initialize the OpenAI client
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    base_url=os.getenv("OPENAI_BASE_URL"),
-)
+# Initialize the Gemini client
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.GenerativeModel(config["gemini"]["model"])
 
 
 def main():

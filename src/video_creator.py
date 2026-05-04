@@ -39,7 +39,7 @@ def create_video(client, storyboard_project, output_file, audio_dir, voice_name)
     for scene in storyboard_project['storyboards']:
         # Generate audio for the subtitle
         audio_file = scene['audio']
-        generate_audio(client, scene['subtitles'], audio_file, voice_name)
+        generate_audio(scene['subtitles'], audio_file, voice_name)
         
         # Create audio clip
         audio_clip = AudioFileClip(audio_file)

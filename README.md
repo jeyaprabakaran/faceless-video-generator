@@ -62,17 +62,19 @@ Faceless Video Generator is a comprehensive multimedia content creation tool tha
    Create a `.env` file in the project root directory with the following content:
 
    ```plaintext
-   # Required: OpenAI API configuration for story generation
-   OPENAI_BASE_URL=your_openai_base_url
-   OPENAI_API_KEY=your_openai_api_key
-   
+   # Required: Gemini API key for story generation
+   # Get yours for free at https://aistudio.google.com/
+   GEMINI_API_KEY=your_gemini_api_key_here
+
    # Required: Replicate API token for default image generation
    REPLICATE_API_TOKEN=your_replicate_api_token
-   
+
    # Optional: FAL API key if you want to use FAL for image generation
-   # To use FAL, you'll need to modify src/main.py
+   # To use FAL, modify src/main.py to pass fal_flux_api instead of replicate_flux_api
    FAL_KEY=your_fal_api_key
    ```
+
+   A `.env.example` file is included in the repository as a reference.
 
    Note: The system uses Replicate for image generation by default. If you prefer to use FAL's image generation service, you can modify `src/main.py` accordingly.
 
@@ -107,7 +109,7 @@ The script will automatically generate the story, images, and video.
 - `src/story_generator.py`: Functions for generating stories, translations, and storyboards.
 - `src/image_generator.py`: Functions for generating images.
 - `src/video_creator.py`: Functions for creating videos.
-- `src/audio_generator.py`: Functions for generating audio using OpenAI TTS.
+- `src/audio_generator.py`: Functions for generating audio using gTTS (Google Text-to-Speech).
 - `src/utils.py`: Utility functions for various tasks.
 - `src/transitions.py`: Video transition effects.
 - `src/parse_json.py`: JSON parsing utilities.
@@ -124,8 +126,8 @@ The `config.json` file contains various settings for the project, including:
 ### Storyboard Settings
 - `max_scenes`: Maximum number of scenes to generate for each story (14)
 
-### OpenAI Settings
-- `model`: The GPT model to use for story generation ("gpt-4")
+### Gemini Settings
+- `model`: The Gemini model to use for story generation ("gemini-2.0-flash")
 - `temperature`: Creativity level for story generation (0.9, higher means more creative)
 
 ### Image Generation Settings
@@ -148,7 +150,8 @@ The project supports two image generation APIs:
 - `num_images`: Number of images to generate per prompt (1)
 
 ### Text-to-Speech Settings
-- `speech_rate`: Speed multiplier for generated speech (1.1)
+- gTTS (Google Text-to-Speech) is used for free audio generation.
+- The voice accent is selected interactively at runtime (US, British, Australian, etc.).
 
 You can modify these settings in the `config.json` file to customize the behavior of the application according to your needs.
 

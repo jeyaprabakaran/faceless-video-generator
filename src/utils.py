@@ -57,17 +57,28 @@ def create_resource_dir(script_dir, story_type, title):
 
     return story_dir
 
-def call_openai_api(client, messages, max_retries=3):
+def call_gemini_api(model, messages, max_retries=3):
     config = load_config()
-    # Add a system message requesting JSON output
+    # Combine system and user messages into a single prompt for Gemini
+    parts = []
+    for msg in messages:
+        if msg["role"] == "system":
+            parts.append(f"[System Instructions]\n{msg['content']}")
+        elif msg["role"] in ("user", "assistant"):
+            parts.append(msg["content"])
+        else:
+            parts.append(msg["content"])
+    prompt = "\n\n".join(parts)
+
+    generation_config = {"temperature": config["gemini"]["temperature"]}
+
     for attempt in range(max_retries):
         try:
-            response = client.chat.completions.create(
-                model=config['openai']['model'],
-                temperature=config['openai']['temperature'],
-                messages=messages
+            response = model.generate_content(
+                prompt,
+                generation_config=generation_config,
             )
-            return response.choices[0].message.content
+            return response.text
         except Exception as e:
             print(f"An error occurred: {e}")
             if attempt < max_retries - 1:
@@ -166,24 +177,26 @@ def create_blank_image(filename, width=720, height=1280):
     print(f"Created blank image: {filename}")
 
 def pick_voice_name():
-    # alloy, echo, fable, onyx, nova, and shimmer
+    # gTTS accent/language codes: com (default US), co.uk (British), com.au (Australian),
+    # ca (Canadian), co.in (Indian), ie (Irish), co.za (South African)
     voices = [
-        "alloy",
-        "echo",
-        "fable",
-        "onyx",
-        "nova",
-        "shimmer"
+        ("US English", "com"),
+        ("British English", "co.uk"),
+        ("Australian English", "com.au"),
+        ("Canadian English", "ca"),
+        ("Indian English", "co.in"),
+        ("Irish English", "ie"),
+        ("South African English", "co.za"),
     ]
-    print("Choose a voice:")
-    for i, voice in enumerate(voices, 1):
-        print(f"{i}. {voice}")
+    print("Choose a voice accent:")
+    for i, (label, _) in enumerate(voices, 1):
+        print(f"{i}. {label}")
 
     while True:
         try:
             choice = int(input("Enter the number of your choice: "))
             if 1 <= choice <= len(voices):
-                return voices[choice - 1]
+                return voices[choice - 1][1]
             else:
                 print("Invalid choice. Please try again.")
         except ValueError:

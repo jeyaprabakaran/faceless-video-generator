@@ -1,5 +1,5 @@
 from utils import (
-    call_openai_api, 
+    call_gemini_api, 
     create_empty_storyboard,
     load_config,
     STORY_TYPE_HASHTAGS
@@ -155,7 +155,7 @@ def generate_story_and_title(client, story_type: str) -> Tuple[str, str, str]:
         {"role": "user", "content": prompt},
     ]
 
-    response = call_openai_api(client, messages)
+    response = call_gemini_api(client, messages)
     if response:
         parts = response.split("\n\n", 2)
         if len(parts) == 3:
@@ -236,7 +236,7 @@ def generate_characters(client, story: str) -> List[Dict[str, str]]:
         {"role": "user", "content": prompt},
     ]
 
-    response = call_openai_api(client, messages)
+    response = call_gemini_api(client, messages)
     if not response:
         print("API returned empty response")
     
@@ -385,7 +385,7 @@ def generate_storyboard(client, title: str, story: str, story_type: str, charact
         {"role": "user", "content": prompt},
     ]
 
-    response = call_openai_api(client, messages)
+    response = call_gemini_api(client, messages)
     if not response:
         print("API returned empty response")
         return create_empty_storyboard(title)

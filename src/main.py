@@ -2,7 +2,7 @@ import os
 import re
 import json
 from dotenv import load_dotenv
-from openai import OpenAI
+import google.generativeai as genai
 from utils import pick_voice_name
 from story_generator import (
     generate_story_and_title,
@@ -20,7 +20,7 @@ from utils import (
     pick_image_style,
     load_config,
 )
-from api import replicate_flux_api, fal_flux_api
+from api import replicate_flux_api, fal_flux_api, huggingface_hf_api
 from video_creator import add_subtitles
 
 # Get the directory of the current script
@@ -31,18 +31,38 @@ dotenv_path = os.path.join(os.path.dirname(script_dir), ".env")
 load_dotenv(dotenv_path)
 
 config = load_config()
-# Initialize the OpenAI client
-client = OpenAI(
-    api_key=os.getenv("OPENAI_API_KEY"),
-    base_url=os.getenv("OPENAI_BASE_URL"),
-)
+# Initialize the Gemini client
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+client = genai.GenerativeModel(config["gemini"]["model"])
+
+
+def pick_image_provider():
+    providers = [
+        ("Hugging Face (free — FLUX.1-schnell)", huggingface_hf_api),
+        ("Replicate (paid — Flux Schnell)", replicate_flux_api),
+        ("FAL AI (paid — Flux Schnell)", fal_flux_api),
+    ]
+    print("\nChoose an image generation provider:")
+    for i, (label, _) in enumerate(providers, 1):
+        print(f"{i}. {label}")
+
+    while True:
+        try:
+            choice = int(input("Enter the number of your choice: "))
+            if 1 <= choice <= len(providers):
+                return providers[choice - 1][1]
+            else:
+                print("Invalid choice. Please try again.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
 
 
 def main():
-    # 1. pick story type, image style and voice name
+    # 1. pick story type, image style, voice name, and image provider
     story_type = pick_story_type()
     image_style = pick_image_style()
     voice_name = pick_voice_name()
+    image_generator = pick_image_provider()
 
     # 2. generate story and title
     title, description, story = generate_story_and_title(client, story_type)
@@ -108,7 +128,7 @@ def main():
         storyboard_project,
         story_dir,
         image_style,
-        replicate_flux_api,
+        image_generator,
     )
 
     # Update storyboard_project with image and audio paths

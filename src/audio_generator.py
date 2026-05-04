@@ -1,26 +1,15 @@
 import os
-from dotenv import load_dotenv
-from utils import load_config
+from gtts import gTTS
 
-load_dotenv()
 
-def generate_audio(client, text, output_file, voice_name):
-    config = load_config()
-    # Get the speech rate from the config file
-    speech_rate = config['tts']['speech_rate']
+def generate_audio(text, output_file, voice_name):
+    # voice_name is a gTTS top-level domain (tld) that selects the accent,
+    # e.g. "com" (US), "co.uk" (British), "com.au" (Australian).
+    tld = voice_name if voice_name else "com"
 
     try:
-        result = client.audio.speech.create(
-            model="tts-1",
-            voice=voice_name,
-            input=text,
-            speed=speech_rate,
-            response_format="mp3"
-        )
-
-        # Save the audio content to the output file
-        with open(output_file, "wb") as audio_file:
-            audio_file.write(result.content)
+        tts = gTTS(text=text, lang="en", tld=tld, slow=False)
+        tts.save(output_file)
 
         print(f"Speech synthesized for text [{text}], and the audio was saved to [{output_file}]")
         return True

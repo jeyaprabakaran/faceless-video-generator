@@ -59,24 +59,26 @@ Faceless Video Generator is a comprehensive multimedia content creation tool tha
    ```
 
 4. Configure environment variables:
-   Create a `.env` file in the project root directory with the following content:
+   Create a `.env` file in the project root directory. A `.env.example` is included as a reference.
 
    ```plaintext
    # Required: Gemini API key for story generation
    # Get yours for free at https://aistudio.google.com/
    GEMINI_API_KEY=your_gemini_api_key_here
 
-   # Required: Replicate API token for default image generation
+   # Image generation — choose ONE of the following:
+
+   # Option 1 (FREE): Hugging Face — https://huggingface.co/settings/tokens
+   HF_TOKEN=your_huggingface_token_here
+
+   # Option 2 (Paid): Replicate — https://replicate.com/
    REPLICATE_API_TOKEN=your_replicate_api_token
 
-   # Optional: FAL API key if you want to use FAL for image generation
-   # To use FAL, modify src/main.py to pass fal_flux_api instead of replicate_flux_api
+   # Option 3 (Paid): FAL AI — https://fal.ai/
    FAL_KEY=your_fal_api_key
    ```
 
-   A `.env.example` file is included in the repository as a reference.
-
-   Note: The system uses Replicate for image generation by default. If you prefer to use FAL's image generation service, you can modify `src/main.py` accordingly.
+   When running the script you will be prompted to pick an image provider. Select option **1 (Hugging Face)** to use the fully free pipeline — no credit card required.
 
 ## Usage
 
@@ -131,9 +133,16 @@ The `config.json` file contains various settings for the project, including:
 - `temperature`: Creativity level for story generation (0.9, higher means more creative)
 
 ### Image Generation Settings
-The project supports two image generation APIs:
+The project supports three image generation providers (selected interactively at runtime):
 
-#### Replicate Flux API Settings
+#### Hugging Face Inference API (FREE)
+- Free tier — requires only a free account token (`HF_TOKEN`)
+- `model`: `"black-forest-labs/FLUX.1-schnell"`
+- `width` / `height`: Output dimensions in pixels (720 × 1280 for 9:16 portrait video)
+- `num_inference_steps`: Number of denoising steps (4)
+- `guidance_scale`: How closely to follow the prompt (3.5)
+
+#### Replicate Flux API Settings (Paid)
 - `model`: Image generation model ("black-forest-labs/flux-schnell")
 - `aspect_ratio`: Output image aspect ratio ("9:16" for vertical videos)
 - `num_inference_steps`: Number of denoising steps (4)
@@ -141,7 +150,7 @@ The project supports two image generation APIs:
 - `guidance`: How closely to follow the prompt (3.0)
 - `output_quality`: Image quality setting (100)
 
-#### FAL Flux API Settings
+#### FAL Flux API Settings (Paid)
 - `model`: Image generation model ("fal-ai/flux/schnell")
 - `image_size`: Output image size ("portrait_16_9")
 - `num_inference_steps`: Number of denoising steps (4)

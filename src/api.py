@@ -97,3 +97,53 @@ def replicate_flux_api(prompt: str, max_retries: int = 3) -> Optional[bytes]:
                 )
     return None
 
+
+def huggingface_hf_api(prompt: str, max_retries: int = 3) -> Optional[bytes]:
+    """Generate an image using the Hugging Face Inference API (free tier).
+
+    Requires a free HF_TOKEN from https://huggingface.co/settings/tokens.
+    Uses FLUX.1-schnell — the same model family as the Replicate/FAL providers.
+    """
+    config = load_config()
+    hf_config = config["hf_image_api"]
+    hf_token = os.getenv("HF_TOKEN")
+    if not hf_token:
+        print("HF_TOKEN environment variable is not set. Cannot call Hugging Face API.")
+        return None
+
+    api_url = f"https://api-inference.huggingface.co/models/{hf_config['model']}"
+    headers = {"Authorization": f"Bearer {hf_token}"}
+    payload = {
+        "inputs": prompt,
+        "parameters": {
+            "width": hf_config["width"],
+            "height": hf_config["height"],
+            "num_inference_steps": hf_config["num_inference_steps"],
+            "guidance_scale": hf_config["guidance_scale"],
+        },
+    }
+
+    for attempt in range(max_retries):
+        try:
+            response = requests.post(api_url, headers=headers, json=payload, timeout=120)
+            # HF returns 503 when the model is loading; retry with a longer wait
+            if response.status_code == 503:
+                wait = response.json().get("estimated_time", 20)
+                print(f"Model is loading, waiting {wait:.0f}s before retry...")
+                time.sleep(float(wait))
+                continue
+            response.raise_for_status()
+            return response.content
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(
+                    f"Error in Hugging Face image generation (attempt {attempt + 1}/{max_retries}): {e}"
+                )
+                print("Retrying...")
+                time.sleep(2)
+            else:
+                print(
+                    f"Error in Hugging Face image generation after {max_retries} attempts: {e}"
+                )
+    return None
+

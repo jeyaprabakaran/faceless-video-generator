@@ -57,15 +57,13 @@ def create_resource_dir(script_dir, story_type, title):
 
     return story_dir
 
-def call_gemini_api(model, messages, max_retries=3):
+def call_gemini_api(client, messages, max_retries=3):
     config = load_config()
     # Combine system and user messages into a single prompt for Gemini
     parts = []
     for msg in messages:
         if msg["role"] == "system":
             parts.append(f"[System Instructions]\n{msg['content']}")
-        elif msg["role"] in ("user", "assistant"):
-            parts.append(msg["content"])
         else:
             parts.append(msg["content"])
     prompt = "\n\n".join(parts)
@@ -74,7 +72,7 @@ def call_gemini_api(model, messages, max_retries=3):
 
     for attempt in range(max_retries):
         try:
-            response = model.generate_content(
+            response = client.generate_content(
                 prompt,
                 generation_config=generation_config,
             )
